@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOCHAST-O-LIGA | Blitz Main Stage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        /* DEEP SPACE NAVY THEME */
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: radial-gradient(circle at top right, #0a192f 0%, #020617 100%); overflow: hidden; }
+        .stars { position: absolute; width: 100%; height: 100%; background: transparent; }
+        .stars::after { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(1px 1px at 20px 30px, #64ffda, rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 140px 70px, #e0f2fe, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #0ea5e9, rgba(0,0,0,0)), radial-gradient(1px 1px at 160px 120px, #ffffff, rgba(0,0,0,0)); background-repeat: repeat; background-size: 300px 300px; animation: moveStars 200s linear infinite; opacity: 0.3; }
+        @keyframes moveStars { from { background-position: 0 0; } to { background-position: -10000px 5000px; } }
+        
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 4px; }
+
+        .type-cursor { display: inline-block; width: 14px; height: 1em; background-color: #22d3ee; margin-left: 8px; vertical-align: middle; animation: blink 1s step-start infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body class="text-slate-300 font-mono h-screen flex flex-col overflow-hidden p-6 md:p-8 relative">
+    
+    <div class="space-bg"><div class="stars"></div></div>
+
+    <div class="flex items-center justify-between border-b border-blue-900/50 pb-6 mb-6 shrink-0 z-10 relative">
+        <div class="flex items-center gap-6">
+            <img src="logo.png" alt="Logo" class="h-16 w-auto object-contain drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]" onerror="this.outerHTML='<div class=\\'h-16 w-16 bg-[#0a192f] border border-blue-900 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-bold\\'>LOGO</div>'">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-black text-slate-200 tracking-[0.2em] uppercase drop-shadow-md leading-none">STOCHAST-O-LIGA</h1>
+                <div class="flex items-center gap-4 mt-2">
+                    <p class="text-cyan-500 text-xl md:text-2xl font-bold tracking-[0.3em] uppercase drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]">Round 3: BLITZ</p>
+                    <div class="h-4 w-px bg-blue-800"></div>
+                    <p class="text-blue-400 tracking-widest uppercase text-xs md:text-sm">Main Stage Projector</p>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div id="statusIndicator" class="bg-[#020617] border border-blue-900 px-6 py-3 rounded-full text-slate-500 uppercase tracking-widest font-bold flex items-center gap-3 shadow-inner text-sm">
+                <i data-lucide="loader" class="w-5 h-5 animate-spin"></i> SYSTEM IDLE
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col lg:flex-row gap-6 md:gap-8 z-10 relative min-h-0 w-full">
+        
+        <div class="flex-1 border border-blue-900/50 bg-[#060e24]/80 backdrop-blur-xl rounded-2xl flex flex-col shadow-[0_0_40px_rgba(0,0,0,0.5)] relative overflow-hidden min-h-0">
+            <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-60"></div>
+            
+            <div class="px-8 py-4 border-b border-blue-900/40 bg-[#0a192f]/50 shrink-0">
+                <h2 class="text-cyan-400 font-bold flex items-center gap-2 tracking-widest uppercase text-sm">
+                    <i data-lucide="mic" class="w-5 h-5"></i> Live Directive Audio Feed
+                </h2>
+            </div>
+            
+            <div class="flex-1 flex items-center justify-center p-8 md:p-12 overflow-y-auto custom-scroll w-full h-full">
+                <div id="questionBox" class="w-full text-center text-slate-500 text-4xl md:text-5xl lg:text-6xl font-medium leading-[1.5] tracking-wide max-w-5xl mx-auto break-words">
+                    AWAITING SYSTEM INITIALIZATION...
+                </div>
+            </div>
+
+            <div id="buzzerHighlight" class="absolute inset-0 bg-[#022c22]/95 backdrop-blur-2xl flex flex-col items-center justify-center hidden z-20 transition-all duration-300 border-[8px] border-emerald-500 shadow-[inset_0_0_150px_rgba(16,185,129,0.4)]">
+                <div class="animate-[pulse_1.5s_ease-in-out_infinite] flex flex-col items-center">
+                    <div class="bg-[#020617] p-8 rounded-full mb-8 border border-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.2)]">
+                        <i data-lucide="zap" class="w-24 h-24 md:w-32 md:h-32 text-emerald-400"></i>
+                    </div>
+                    <p class="text-emerald-500 text-xl md:text-2xl font-bold tracking-[0.4em] uppercase text-center mb-4">SIGNAL INTERCEPTED BY</p>
+                    <h1 id="winnerName" class="text-6xl md:text-7xl lg:text-[8rem] font-black text-emerald-100 tracking-widest uppercase text-center drop-shadow-[0_0_40px_rgba(16,185,129,0.6)] leading-none px-4">TEAM NAME</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-[350px] xl:w-[450px] border border-blue-900/50 bg-[#060e24]/80 backdrop-blur-xl rounded-2xl flex flex-col shadow-[0_0_20px_rgba(0,0,0,0.5)] relative overflow-hidden shrink-0 min-h-0 h-full">
+            <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-60"></div>
+            
+            <div class="px-6 py-5 border-b border-blue-900/40 bg-[#0a192f]/50 shrink-0">
+                <h2 class="text-blue-400 font-bold flex items-center gap-3 tracking-widest uppercase text-sm">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Network Standings
+                </h2>
+            </div>
+            
+            <div id="leaderboardGrid" class="flex-1 overflow-y-auto custom-scroll p-4 md:p-6 flex flex-col gap-4">
+                </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAzKmv4xmg_9pQhX06HUmV74J3Ge5e0l3o", authDomain: "stochastoliga.firebaseapp.com", projectId: "stochastoliga", storageBucket: "stochastoliga.firebasestorage.app", messagingSenderId: "684026163908", appId: "1:684026163908:web:a69ebd4a7dcdb83020cf91" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        lucide.createIcons();
+
+        // --- DICTATION ENGINE ---
+        let dictationInterval;
+        let activeDictationText = null;
+        const qBox = document.getElementById('questionBox');
+        const highlight = document.getElementById('buzzerHighlight');
+        const winnerName = document.getElementById('winnerName');
+        const statusInd = document.getElementById('statusIndicator');
+
+        onValue(ref(db, 'system/blitzState'), (snapshot) => {
+            const state = snapshot.val();
+            if (!state) return;
+
+            if (state.status === 'waiting') {
+                activeDictationText = null;
+                highlight.classList.add('hidden');
+                clearInterval(dictationInterval);
+                
+                qBox.className = "w-full text-center text-slate-600 text-3xl md:text-4xl lg:text-5xl font-medium leading-[1.5] tracking-widest max-w-5xl mx-auto break-words";
+                qBox.innerText = "AWAITING NEXT DIRECTIVE...";
+                
+                statusInd.className = "bg-[#020617] border border-blue-900 px-6 py-3 rounded-full text-slate-500 uppercase tracking-widest font-bold flex items-center gap-3 shadow-inner text-sm";
+                statusInd.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> SYSTEM IDLE';
+            } 
+            else if (state.status === 'playing') {
+                highlight.classList.add('hidden');
+                statusInd.className = "bg-[#0a192f] border border-cyan-800 px-6 py-3 rounded-full text-cyan-400 uppercase tracking-widest font-bold flex items-center gap-3 shadow-[0_0_15px_rgba(34,211,238,0.3)] text-sm";
+                statusInd.innerHTML = '<i data-lucide="radio" class="w-5 h-5 animate-pulse"></i> LIVE BROADCAST';
+
+                if (activeDictationText !== state.text) {
+                    activeDictationText = state.text;
+                    
+                    const textWithBr = state.text.replace(/\n/g, ' <br> ');
+                    const tokens = textWithBr.match(/(\$\$.*?\$\$|\$.*?\$|<br>|\S+)/g) || [];
+                    let currentWordIndex = 0;
+                    
+                    qBox.className = "w-full text-left text-cyan-50 text-4xl md:text-5xl lg:text-[4rem] font-medium leading-[1.6] tracking-wide max-w-5xl mx-auto break-words";
+                    qBox.innerHTML = '<span class="type-cursor"></span>';
+
+                    clearInterval(dictationInterval);
+                    dictationInterval = setInterval(() => {
+                        if (currentWordIndex < tokens.length) {
+                            const htmlString = tokens.slice(0, currentWordIndex + 1).join(' ') + '<span class="type-cursor"></span>';
+                            qBox.innerHTML = htmlString;
+                            
+                            if (window.renderMathInElement) {
+                                renderMathInElement(qBox, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+                            }
+                            currentWordIndex++;
+                        } else {
+                            clearInterval(dictationInterval);
+                            qBox.innerHTML = tokens.join(' ');
+                            if (window.renderMathInElement) renderMathInElement(qBox, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+                        }
+                    }, 600);
+                }
+            } 
+            else if (state.status === 'locked') {
+                activeDictationText = null;
+                clearInterval(dictationInterval);
+                
+                const htmlContent = qBox.innerHTML;
+                qBox.innerHTML = htmlContent.replace('<span class="type-cursor"></span>', '');
+                
+                winnerName.innerText = state.winnerName;
+                highlight.classList.remove('hidden');
+                
+                statusInd.className = "bg-[#022c22] border border-emerald-800 px-6 py-3 rounded-full text-emerald-400 uppercase tracking-widest font-bold flex items-center gap-3 shadow-[0_0_20px_rgba(16,185,129,0.3)] text-sm";
+                statusInd.innerHTML = '<i data-lucide="lock" class="w-5 h-5"></i> BUZZER SECURED';
+            }
+            lucide.createIcons();
+        });
+
+        // --- VERTICAL SCOREBOARD ---
+        onValue(ref(db, 'teams'), (snapshot) => {
+            const data = snapshot.val();
+            const grid = document.getElementById('leaderboardGrid');
+            grid.innerHTML = '';
+            if (!data) return;
+
+            const teamsArray = [];
+            for (const key in data) teamsArray.push(data[key]);
+            teamsArray.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+            teamsArray.forEach((team) => {
+                if (team.status === 'eliminated') return;
+                
+                const card = `
+                    <div class="bg-[#020617] border border-blue-900/50 rounded-xl p-4 flex items-center justify-between shadow-lg relative overflow-hidden shrink-0">
+                        <div class="absolute left-0 top-0 h-full w-2 ${team.color || 'bg-cyan-500'}"></div>
+                        <div class="pl-4 w-full pr-2">
+                            <div class="w-full truncate text-sm md:text-base font-bold text-slate-200 tracking-widest uppercase">${team.name}</div>
+                            <div class="text-[9px] md:text-[10px] text-slate-500 tracking-widest uppercase mt-1">Total Score</div>
+                        </div>
+                        <div class="text-3xl md:text-4xl font-black text-emerald-400 tabular-nums drop-shadow-[0_0_8px_rgba(52,211,153,0.3)] pr-2 shrink-0">
+                            ${team.score || 0}
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', card);
+            });
+        });
+    </script>
+</body>
+</html>

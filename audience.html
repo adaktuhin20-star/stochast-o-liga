@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOCHAST-O-LIGA | Audience NOC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        .ticker-scroll::-webkit-scrollbar { width: 4px; }
+        .ticker-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .ticker-scroll::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 4px; }
+        
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: radial-gradient(circle at bottom, #082f49 0%, #030712 100%); overflow: hidden; }
+        .stars { position: absolute; width: 100%; height: 100%; background: transparent; }
+        .stars::after {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(1.5px 1.5px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 140px 70px, #e0f2fe, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #bae6fd, rgba(0,0,0,0)), radial-gradient(2.5px 2.5px at 160px 120px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat; background-size: 250px 250px; animation: moveStars 150s linear infinite; opacity: 0.4;
+        }
+        @keyframes moveStars { from { background-position: 0 0; } to { background-position: -10000px 5000px; } }
+    </style>
+</head>
+<body class="text-slate-300 font-mono antialiased overflow-auto" style="min-height: 100vh;">
+
+    <div class="space-bg"><div class="stars"></div></div>
+
+    <div class="max-w-md mx-auto relative flex flex-col border-x border-slate-800 bg-slate-900/60 backdrop-blur shadow-2xl">
+        
+        <div class="shrink-0 bg-slate-950/90 backdrop-blur border-b border-cyan-800 p-4 shadow-[0_4px_15px_rgba(8,145,178,0.2)]">
+            <div class="flex justify-center mb-2">
+                <img src="logo.png" alt="Logo" class="h-20 w-auto object-contain" onerror="this.outerHTML='<div class=\'h-20 w-20 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-bold\'>LOGO</div>'">
+            </div>
+            <h1 class="text-center text-cyan-500 font-bold text-sm tracking-widest flex items-center justify-center gap-2 mb-1 uppercase">
+                <i data-lucide="radio" class="w-4 h-4 text-cyan-400 animate-pulse"></i> PLAYER OBSERVER LINK
+            </h1>
+            <div class="text-center text-4xl font-bold text-cyan-50 tabular-nums shadow-cyan-500/50 drop-shadow-[0_0_10px_rgba(207,250,255,0.3)]" id="timerDisplay">15:00</div>
+        </div>
+
+        <div class="flex-1 flex flex-col p-4 space-y-4 min-h-0">
+            
+            <div class="shrink-0">
+                <h2 class="text-xs text-slate-500 uppercase flex items-center gap-2 mb-2 border-b border-slate-800 pb-1 font-bold tracking-widest">
+                    <i data-lucide="activity" class="w-4 h-4 text-cyan-500"></i> Live Activity
+                </h2>
+                <div class="bg-slate-950 border border-slate-700 rounded p-3 h-32 overflow-y-auto ticker-scroll flex flex-col space-y-2" id="tickerContainer">
+                    <div class="text-[11px] text-slate-600 italic border-l-2 border-slate-700 pl-2">System listening for team actions...</div>
+                </div>
+            </div>
+
+            <div class="flex-1 min-h-0 flex flex-col">
+                <h2 class="text-xs text-slate-500 uppercase flex items-center gap-2 mb-2 border-b border-slate-800 pb-1 font-bold tracking-widest shrink-0">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4 text-emerald-500"></i> Survival Leaderboard
+                </h2>
+                <div class="space-y-3 overflow-y-auto ticker-scroll flex-1 pr-2 pb-2" id="leaderboardContainer">
+                    <div class="text-center text-sm text-slate-500 py-4 animate-pulse">Awaiting connection...</div>
+                </div>
+            </div>
+
+            <div class="shrink-0 border border-fuchsia-800/50 bg-fuchsia-950/20 p-5 rounded-xl relative overflow-hidden shadow-[0_0_15px_rgba(217,70,239,0.1)] transition-opacity duration-500 mb-2" id="spotlightContent">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-fuchsia-600 to-purple-600"></div>
+                <div class="flex justify-between items-start mb-2">
+                    <h2 class="text-xs text-fuchsia-400 uppercase flex items-center gap-2 font-bold tracking-widest"><i data-lucide="focus" class="w-4 h-4"></i> Spotlight</h2>
+                    <span id="spotlightStage" class="text-[10px] bg-fuchsia-900/50 text-fuchsia-300 px-2 py-0.5 rounded border border-fuchsia-700">CLUE 0</span>
+                </div>
+                <h3 id="spotlightTeam" class="text-lg font-bold text-slate-200 mb-2 uppercase tracking-wider">AWAITING TEAMS</h3>
+                <div id="spotlightQuestion" class="text-sm text-fuchsia-100 mb-3 leading-relaxed border-l-2 border-fuchsia-500 pl-3">Scanning network for active problem sets...</div>
+                <p class="text-[10px] text-fuchsia-500/70 uppercase tracking-wider text-center mt-2 border-t border-fuchsia-800/50 pt-2">Can you solve it before they do?</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onValue, set, onDisconnect, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAzKmv4xmg_9pQhX06HUmV74J3Ge5e0l3o", authDomain: "stochastoliga.firebaseapp.com", projectId: "stochastoliga", storageBucket: "stochastoliga.firebasestorage.app", messagingSenderId: "684026163908", appId: "1:684026163908:web:a69ebd4a7dcdb83020cf91" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        lucide.createIcons();
+
+        const ROLE = localStorage.getItem('stochasto_role');
+        if (ROLE !== 'audience') { window.location.href = 'index.html'; }
+
+        const connectedRef = ref(db, '.info/connected');
+        let myConnectionsRef = push(ref(db, 'system/audience'));
+        onValue(connectedRef, (snap) => { if (snap.val() === true) { set(myConnectionsRef, true); onDisconnect(myConnectionsRef).remove(); } });
+
+        const timerDisplay = document.getElementById('timerDisplay'); const tickerContainer = document.getElementById('tickerContainer'); const leaderboardContainer = document.getElementById('leaderboardContainer'); const spotlightTeam = document.getElementById('spotlightTeam'); const spotlightStage = document.getElementById('spotlightStage'); const spotlightQuestion = document.getElementById('spotlightQuestion'); const spotlightContent = document.getElementById('spotlightContent');
+
+        let previousTeamsState = {}; let initialLoadDone = false; let activeTeamsList = []; let spotlightIndex = 0;
+
+        function addLog(message, colorClass) {
+            const logHtml = `<div class="text-[11px] border-l-2 border-slate-700 pl-2 py-1 animate-[pulse_0.5s_ease-out]"><span class="text-slate-500 mr-1">[${timerDisplay.innerText}]</span> <span class="${colorClass} leading-snug">${message}</span></div>`;
+            tickerContainer.insertAdjacentHTML('beforeend', logHtml);
+            tickerContainer.scrollTop = tickerContainer.scrollHeight;
+        }
+
+        setInterval(() => {
+            if (activeTeamsList.length === 0) return;
+            spotlightContent.classList.remove('opacity-100'); spotlightContent.classList.add('opacity-0');
+            setTimeout(() => {
+                spotlightIndex = (spotlightIndex + 1) % activeTeamsList.length;
+                const team = activeTeamsList[spotlightIndex];
+                const maxStages = team.totalStages || 5;
+                
+                spotlightTeam.innerText = team.name; spotlightStage.innerText = `CLUE ${team.stages + 1}`;
+                if (team.questions && team.stages < maxStages) { spotlightQuestion.innerText = team.questions[team.stages]; } else if (team.stages >= maxStages) { spotlightQuestion.innerText = "TREASURE UNLOCKED."; } else { spotlightQuestion.innerText = "Processing directive..."; }
+                if (window.renderMathInElement) { renderMathInElement(spotlightQuestion, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] }); }
+                spotlightContent.classList.remove('opacity-0'); spotlightContent.classList.add('opacity-100');
+            }, 500); 
+        }, 8000); 
+
+        function renderLeaderboard(teamsArray) {
+            leaderboardContainer.innerHTML = '';
+            teamsArray.forEach(team => {
+                const isEliminated = team.status === 'eliminated'; const maxStages = team.totalStages || 5; const progressPercentage = (team.stages / maxStages) * 100;
+                let heartsHtml = ''; for(let i=0; i<3; i++) { heartsHtml += `<i data-lucide="heart" class="w-3.5 h-3.5 ${i < team.hearts ? 'text-red-500 fill-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]' : 'text-slate-800'} inline-block"></i>`; }
+
+                const teamHtml = `
+                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-lg flex items-center justify-between ${isEliminated ? 'opacity-50' : ''}">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold text-xs ${isEliminated ? 'text-slate-500' : 'text-slate-200'} uppercase tracking-wider">${team.name}</span>
+                                ${isEliminated ? `<span class="text-[9px] bg-red-900/50 text-red-400 px-1.5 py-0.5 rounded border border-red-800 font-bold">ELIMINATED</span>` : `<span class="text-[10px] text-emerald-400 font-bold tracking-widest">${team.score || 0} PTS</span>`}
+                            </div>
+                            <div class="w-full bg-slate-900 rounded-full h-1.5 border border-slate-800 overflow-hidden">
+                                <div class="${team.color || 'bg-cyan-500'} h-1.5 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-1000" style="width: ${progressPercentage > 5 ? progressPercentage : 5}%"></div>
+                            </div>
+                        </div>
+                        <div class="ml-4 flex flex-col items-end justify-center h-full"><div class="flex gap-1 mb-1">${heartsHtml}</div></div>
+                    </div>`;
+                leaderboardContainer.insertAdjacentHTML('beforeend', teamHtml);
+            });
+            lucide.createIcons(); 
+        }
+
+        onValue(ref(db, 'teams'), (snapshot) => {
+            const data = snapshot.val(); if (!data) return;
+            const liveTeamsArray = []; activeTeamsList = [];
+            for (const key in data) {
+                const team = data[key]; liveTeamsArray.push(team);
+                if (team.status === 'active') activeTeamsList.push(team);
+                if (initialLoadDone) {
+                    const prev = previousTeamsState[key];
+                    if (prev) {
+                        if (team.hearts < prev.hearts && team.hearts > 0) { addLog(`⚠️ ${team.name} opened the wrong door. -1 Life.`, 'text-amber-400'); }
+                        if (team.status === 'eliminated' && prev.status !== 'eliminated') { addLog(`💀 ERROR: ${team.name} locked out!`, 'text-red-500 font-bold'); }
+                        if (team.stages === prev.stages + 1) { addLog(`✅ ${team.name} solved clue ${team.stages}.`, 'text-emerald-400'); }
+                        if (team.stages > prev.stages + 1) { addLog(`🌀 ANOMALY: ${team.name} guessed correctly & jumped to clue ${team.stages}!`, 'text-cyan-400 font-bold'); }
+                        if (team.status === 'finished' && prev.status !== 'finished') { addLog(`🏆 ${team.name} unlocked the treasure!`, 'text-fuchsia-400 font-bold'); }
+                    }
+                }
+                previousTeamsState[key] = { ...team };
+            }
+            initialLoadDone = true; 
+            liveTeamsArray.sort((a, b) => { if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0); return (b.stages || 0) - (a.stages || 0); });
+            renderLeaderboard(liveTeamsArray);
+            if (spotlightTeam.innerText === "AWAITING TEAMS" && activeTeamsList.length > 0) {
+                spotlightTeam.innerText = activeTeamsList[0].name; spotlightQuestion.innerText = activeTeamsList[0].questions ? activeTeamsList[0].questions[activeTeamsList[0].stages] : "Loading...";
+            }
+        });
+
+        let timeLeft = 900; let isSystemPaused = true; 
+        onValue(ref(db, 'system/status'), (snapshot) => { isSystemPaused = (snapshot.val() !== 'playing'); });
+        setInterval(() => {
+            if (timeLeft <= 0 || isSystemPaused) return;
+            timeLeft--;
+            const m = Math.floor(timeLeft / 60); const s = (timeLeft % 60).toString().padStart(2, '0');
+            if (typeof timerDisplay !== 'undefined') {
+                timerDisplay.innerText = `${m}:${s}`;
+                if (timeLeft < 60) { timerDisplay.classList.add('text-red-500', 'animate-pulse'); timerDisplay.classList.remove('text-cyan-50', 'shadow-cyan-500/50'); }
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

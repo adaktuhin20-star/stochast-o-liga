@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOCHAST-O-LIGA | Blitz Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        /* DEEP SPACE NAVY THEME */
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: radial-gradient(circle at top right, #0a192f 0%, #020617 100%); overflow: hidden; }
+        .stars { position: absolute; width: 100%; height: 100%; background: transparent; }
+        .stars::after { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(1px 1px at 20px 30px, #64ffda, rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 140px 70px, #e0f2fe, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #0ea5e9, rgba(0,0,0,0)), radial-gradient(1px 1px at 160px 120px, #ffffff, rgba(0,0,0,0)); background-repeat: repeat; background-size: 300px 300px; animation: moveStars 200s linear infinite; opacity: 0.3; }
+        @keyframes moveStars { from { background-position: 0 0; } to { background-position: -10000px 5000px; } }
+        
+        @keyframes pulse-cyan { 0% { box-shadow: 0 0 15px rgba(34,211,238,0.3); } 50% { box-shadow: 0 0 40px rgba(34,211,238,0.6); } 100% { box-shadow: 0 0 15px rgba(34,211,238,0.3); } }
+        .buzzer-armed { animation: pulse-cyan 1.5s infinite; }
+        .buzzer-winner { box-shadow: 0 0 60px rgba(16,185,129,0.8); transform: scale(1.02); }
+        
+        .type-cursor { display: inline-block; width: 10px; height: 1em; background-color: #22d3ee; margin-left: 6px; vertical-align: middle; animation: blink 1s step-start infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(2, 6, 23, 0.5); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 4px; }
+    </style>
+</head>
+<body class="text-slate-300 font-mono h-screen flex flex-col p-4 md:p-6 relative overflow-hidden">
+    
+    <div class="space-bg"><div class="stars"></div></div>
+
+    <div id="pauseOverlay" class="fixed inset-0 bg-[#020617]/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center transition-opacity duration-300 p-4 overflow-y-auto">
+        <div class="text-center mb-6 mt-10">
+            <h2 class="text-lg sm:text-2xl font-bold text-cyan-500 tracking-widest uppercase">Round 3</h2>
+            <h1 class="text-5xl sm:text-7xl font-black text-cyan-300 tracking-widest uppercase drop-shadow-[0_0_20px_rgba(34,211,238,0.4)] mt-1">BLITZ</h1>
+        </div>
+        
+        <p class="text-blue-300 text-lg sm:text-xl italic mb-8 text-center max-w-2xl font-bold">"Feel the heat as you blaze through rapid-fire rounds of Statistical trivia."</p>
+        
+        <div class="max-w-3xl bg-[#0a192f]/80 border border-blue-900 p-6 sm:p-8 rounded-xl text-slate-300 text-sm sm:text-base space-y-4 mb-8 shadow-[0_0_30px_rgba(30,58,138,0.3)] leading-relaxed">
+            <p>In this round, we will be asking <strong class="text-cyan-400">15 Rapid Fire questions</strong> which you will be prompted to answer if you hit the buzzer. Teams will use the devices of their respective team coordinators.</p>
+            <p>Only the <strong class="text-amber-400">first team to hit the buzzer</strong> will be allowed to answer. Please make sure you do not answer until prompted to do so.</p>
+            <p>If a team presses the buzzer <strong class="text-red-400">before the question is completed</strong>, the typing stops instantly. You must answer based on the partial question.</p>
+            <p>Every correct answer will be rewarded with <strong class="text-emerald-400">5 points</strong>. Every incorrect answer will lead to a <strong class="text-red-400">deduction of 5 points</strong>.</p>
+        </div>
+        
+        <button onclick="document.getElementById('pauseOverlay').classList.add('hidden')" class="flex items-center gap-3 bg-[#0a192f] hover:bg-[#172a45] border border-cyan-500 px-8 py-4 rounded-full transition-colors cursor-pointer shadow-[0_0_20px_rgba(34,211,238,0.2)] mb-10 text-cyan-300">
+            <i data-lucide="zap" class="w-5 h-5"></i>
+            <span class="tracking-widest font-bold uppercase text-sm sm:text-base">Acknowledge & Enter Lobby</span>
+        </button>
+    </div>
+
+    <div class="w-full max-w-[1400px] mx-auto flex items-center justify-between gap-4 mb-4 shrink-0 z-10 relative">
+        <div class="flex items-center gap-4">
+            <img src="logo.png" alt="Logo" class="h-10 md:h-12 w-auto object-contain drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]" onerror="this.outerHTML='<div class=\\'h-10 w-10 bg-[#0a192f] border border-blue-900 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-bold\\'>LOGO</div>'">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-200 tracking-[0.2em] uppercase drop-shadow-md leading-none">BLITZ</h2>
+                <p class="text-cyan-500 text-xs md:text-sm font-bold tracking-[0.3em] mt-1 uppercase">Team Terminal</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col lg:flex-row gap-4 md:gap-6 z-10 relative min-h-0 w-full max-w-[1400px] mx-auto pb-4">
+        
+        <div class="flex-1 border border-blue-900/50 bg-[#060e24]/80 backdrop-blur-xl rounded-2xl flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden min-h-0">
+            <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-60"></div>
+            
+            <div class="px-6 py-4 border-b border-blue-900/40 bg-[#0a192f]/50 shrink-0">
+                <h2 class="text-cyan-400 font-bold flex items-center gap-2 tracking-widest uppercase text-xs md:text-sm">
+                    <i data-lucide="mic" class="w-4 h-4"></i> Live Directive Audio Feed
+                </h2>
+            </div>
+            
+            <div class="flex-1 flex items-center justify-center p-6 md:p-10 overflow-y-auto custom-scroll w-full">
+                <div id="playerQuestionBox" class="w-full text-left text-slate-500 text-2xl md:text-3xl lg:text-4xl font-medium leading-[1.5] tracking-wide break-words">
+                    AWAITING NEXT DIRECTIVE...
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-[350px] xl:w-[400px] flex flex-col gap-4 md:gap-6 shrink-0 min-h-0 h-full overflow-y-auto custom-scroll lg:overflow-visible pr-1">
+            
+            <div class="border border-blue-900/50 bg-[#060e24]/80 backdrop-blur-xl p-5 md:p-6 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.5)] relative overflow-hidden shrink-0">
+                <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-blue-600 to-cyan-400 opacity-60"></div>
+                <div class="text-[9px] text-blue-400 uppercase tracking-widest mb-1">TEAM DESIGNATION</div>
+                <h1 id="uiTeamName" class="text-xl sm:text-2xl font-bold text-slate-100 tracking-wider uppercase truncate mb-4">LOADING...</h1>
+                
+                <div class="bg-[#020617] p-3 md:p-4 rounded-lg border border-blue-900/50 flex justify-between items-center shadow-inner">
+                    <span class="text-xs text-slate-500 uppercase tracking-widest">TOTAL SCORE</span>
+                    <span id="playerScore" class="text-2xl font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)]">0</span>
+                </div>
+            </div>
+
+            <div class="flex-1 border border-blue-900/50 bg-[#060e24]/80 backdrop-blur-xl rounded-2xl p-5 flex flex-col items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)] relative min-h-[300px]">
+                
+                <div id="playerStatus" class="text-center font-bold tracking-widest uppercase mb-6 h-10 flex items-center justify-center w-full text-slate-500 text-xs md:text-sm shrink-0 bg-[#020617] rounded-full px-4 border border-blue-900/50 shadow-inner">
+                    <i data-lucide="loader" class="w-4 h-4 mr-2 animate-spin"></i> SYSTEM IDLE
+                </div>
+                
+                <div class="flex-1 flex items-center justify-center w-full">
+                    <button id="buzzBtn" disabled class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full bg-[#020617] border-[3px] md:border-4 border-slate-800 flex items-center justify-center flex-col gap-2 md:gap-3 transition-all duration-200 outline-none select-none touch-manipulation mx-auto shadow-inner">
+                        <i id="buzzIcon" data-lucide="lock" class="w-10 h-10 md:w-14 md:h-14 text-slate-600"></i>
+                        <span id="buzzText" class="text-xl md:text-2xl font-black tracking-widest text-slate-600 mt-1">LOCKED</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, get, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAzKmv4xmg_9pQhX06HUmV74J3Ge5e0l3o", authDomain: "stochastoliga.firebaseapp.com", projectId: "stochastoliga", storageBucket: "stochastoliga.firebasestorage.app", messagingSenderId: "684026163908", appId: "1:684026163908:web:a69ebd4a7dcdb83020cf91" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        lucide.createIcons();
+
+        const TEAM_ID = localStorage.getItem('stochasto_teamId');
+        if (!TEAM_ID) window.location.href = 'index.html'; 
+
+        let TEAM_NAME = "UNKNOWN";
+        let isArmed = false;
+        let dictationInterval;
+        let activeDictationText = null;
+
+        // Custom Uploaded Audio Buzzer Sound
+        function playBuzzerSound() {
+            try {
+                // Plays the uploaded MP3 file
+                const audio = new Audio('eritnhut1992-buzzer-or-wrong-answer-20582.mp3');
+                audio.play();
+            } catch(e) { console.log("Audio play failed", e); }
+        }
+
+        get(ref(db, 'teams/' + TEAM_ID)).then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                TEAM_NAME = data.name || "UNKNOWN";
+                document.getElementById('uiTeamName').innerText = TEAM_NAME;
+                document.getElementById('playerScore').innerText = data.score || 0;
+            }
+        });
+
+        onValue(ref(db, `teams/${TEAM_ID}/score`), (snapshot) => {
+            document.getElementById('playerScore').innerText = snapshot.val() || 0;
+        });
+
+        const stateRef = ref(db, 'system/blitzState');
+        const btn = document.getElementById('buzzBtn');
+        const statusBox = document.getElementById('playerStatus');
+        const qBox = document.getElementById('playerQuestionBox');
+
+        function setBuzzerUI(state) {
+            btn.className = "w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full flex items-center justify-center flex-col gap-2 md:gap-3 transition-all duration-200 outline-none select-none touch-manipulation mx-auto shadow-inner";
+            
+            if (state === 'locked') {
+                btn.classList.add('bg-[#020617]', 'border-[3px]', 'md:border-4', 'border-slate-800');
+                btn.disabled = true; isArmed = false;
+                btn.innerHTML = `<i data-lucide="lock" class="w-10 h-10 md:w-14 md:h-14 text-slate-600"></i><span class="text-xl md:text-2xl font-black tracking-widest text-slate-600 mt-1">LOCKED</span>`;
+            } 
+            else if (state === 'playing') {
+                btn.classList.add('bg-[#0a192f]', 'border-[3px]', 'md:border-4', 'border-cyan-400', 'buzzer-armed', 'cursor-pointer', 'active:scale-95');
+                btn.disabled = false; isArmed = true;
+                btn.innerHTML = `<i data-lucide="zap" class="w-12 h-12 md:w-16 md:h-16 text-cyan-300"></i><span class="text-2xl md:text-3xl font-black tracking-widest text-cyan-300 mt-1 drop-shadow-[0_0_8px_currentColor]">BUZZ IN</span>`;
+            }
+            else if (state === 'winner') {
+                btn.classList.add('bg-[#022c22]', 'border-[3px]', 'md:border-4', 'border-emerald-400', 'buzzer-winner');
+                btn.disabled = true; isArmed = false;
+                btn.innerHTML = `<i data-lucide="check-circle" class="w-12 h-12 md:w-16 md:h-16 text-emerald-400"></i><span class="text-xl md:text-2xl font-black tracking-widest text-emerald-400 mt-1 drop-shadow-[0_0_8px_currentColor]">CAPTURED</span>`;
+            }
+            else if (state === 'loser') {
+                btn.classList.add('bg-[#2a0811]', 'border-[3px]', 'md:border-4', 'border-red-900');
+                btn.disabled = true; isArmed = false;
+                btn.innerHTML = `<i data-lucide="x-octagon" class="w-10 h-10 md:w-14 md:h-14 text-red-700"></i><span class="text-xl md:text-2xl font-black tracking-widest text-red-700 mt-1">TOO LATE</span>`;
+            }
+            lucide.createIcons();
+        }
+
+        onValue(stateRef, (snapshot) => {
+            const state = snapshot.val();
+            if (!state) return;
+
+            if (state.status === 'waiting') {
+                activeDictationText = null;
+                clearInterval(dictationInterval);
+                
+                qBox.className = "w-full text-center text-slate-600 text-2xl md:text-3xl lg:text-4xl font-medium leading-[1.5] tracking-widest break-words";
+                qBox.innerText = "AWAITING NEXT DIRECTIVE...";
+                
+                statusBox.innerHTML = '<i data-lucide="loader" class="w-4 h-4 mr-2 animate-spin"></i> SYSTEM IDLE';
+                statusBox.className = "text-center font-bold tracking-widest uppercase mb-6 h-10 flex items-center justify-center w-full text-slate-500 text-xs md:text-sm shrink-0 bg-[#020617] rounded-full px-4 border border-blue-900/50 shadow-inner";
+                setBuzzerUI('locked');
+            }
+            else if (state.status === 'playing') {
+                statusBox.innerHTML = '<i data-lucide="radio" class="w-4 h-4 mr-2 animate-pulse"></i> BUZZER ACTIVE. PRESS TO INTERCEPT.';
+                statusBox.className = "text-center font-bold tracking-widest uppercase mb-6 h-10 flex items-center justify-center w-full text-cyan-300 text-xs md:text-sm shrink-0 bg-[#0a192f] rounded-full px-4 border border-cyan-800 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]";
+                setBuzzerUI('playing'); 
+                
+                if (activeDictationText !== state.text) {
+                    activeDictationText = state.text;
+                    
+                    const textWithBr = state.text.replace(/\n/g, ' <br> ');
+                    const tokens = textWithBr.match(/(\$\$.*?\$\$|\$.*?\$|<br>|\S+)/g) || [];
+                    let currentWordIndex = 0;
+                    
+                    qBox.className = "w-full text-left text-cyan-50 text-2xl md:text-3xl lg:text-4xl font-medium leading-[1.6] tracking-wide break-words";
+                    qBox.innerHTML = '<span class="type-cursor"></span>';
+                    
+                    clearInterval(dictationInterval);
+                    dictationInterval = setInterval(() => {
+                        if (currentWordIndex < tokens.length) {
+                            const htmlString = tokens.slice(0, currentWordIndex + 1).join(' ') + '<span class="type-cursor"></span>';
+                            qBox.innerHTML = htmlString;
+                            
+                            if (window.renderMathInElement) {
+                                renderMathInElement(qBox, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+                            }
+                            currentWordIndex++;
+                        } else {
+                            clearInterval(dictationInterval);
+                            qBox.innerHTML = tokens.join(' ');
+                            if (window.renderMathInElement) renderMathInElement(qBox, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+                        }
+                    }, 600);
+                }
+            }
+            else if (state.status === 'locked') {
+                activeDictationText = null; 
+                clearInterval(dictationInterval);
+                
+                const htmlContent = qBox.innerHTML;
+                qBox.innerHTML = htmlContent.replace('<span class="type-cursor"></span>', '');
+                
+                if (state.winnerId === TEAM_ID) {
+                    statusBox.innerHTML = '<i data-lucide="mic" class="w-4 h-4 mr-2"></i> LINE SECURED. PROVIDE ANSWER.';
+                    statusBox.className = "text-center font-bold tracking-widest uppercase mb-6 h-10 flex items-center justify-center w-full text-emerald-300 text-xs md:text-sm shrink-0 bg-[#022c22] rounded-full px-4 border border-emerald-800 drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]";
+                    setBuzzerUI('winner');
+                } else {
+                    statusBox.innerHTML = `<i data-lucide="lock" class="w-4 h-4 mr-2"></i> SIGNAL INTERCEPTED BY ${state.winnerName}`;
+                    statusBox.className = "text-center font-bold tracking-widest uppercase mb-6 h-10 flex items-center justify-center w-full text-red-400 text-xs md:text-sm shrink-0 bg-[#2a0811] rounded-full px-4 border border-red-900 drop-shadow-[0_0_8px_rgba(220,38,38,0.3)] truncate";
+                    setBuzzerUI('loser');
+                }
+            }
+        });
+
+        const triggerBuzz = () => {
+            if (!isArmed) return;
+            runTransaction(stateRef, (currentState) => {
+                if (currentState && currentState.status === 'playing') {
+                    currentState.status = 'locked';
+                    currentState.winnerId = TEAM_ID;
+                    currentState.winnerName = TEAM_NAME;
+                    return currentState;
+                }
+                return; 
+            }).then((result) => {
+                // If this specific device won the transaction, play the sound
+                if (result.committed && result.snapshot.val().winnerId === TEAM_ID) {
+                    playBuzzerSound();
+                }
+            });
+        };
+
+        btn.addEventListener('touchstart', triggerBuzz, {passive: true});
+        btn.addEventListener('mousedown', triggerBuzz);
+        document.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.key === 'Enter') triggerBuzz(); });
+
+    </script>
+</body>
+</html>

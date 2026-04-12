@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #020617; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; background: radial-gradient(circle at bottom, #082f49 0%, #020617 100%); overflow: hidden; }
+        .stars { position: absolute; width: 100%; height: 100%; background: transparent; }
+        .stars::after {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(1.5px 1.5px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 140px 70px, #e0f2fe, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #bae6fd, rgba(0,0,0,0)), radial-gradient(2.5px 2.5px at 160px 120px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat; background-size: 250px 250px; animation: moveStars 150s linear infinite; opacity: 0.3;
+        }
+        @keyframes moveStars { from { background-position: 0 0; } to { background-position: -10000px 5000px; } }
+        .retro-grid {
+            position: absolute; bottom: 0; left: 0; width: 100vw; height: 35vh; z-index: 1;
+            background-image: linear-gradient(rgba(14, 165, 233, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.3) 1px, transparent 1px); 
+            background-size: 60px 60px; transform-origin: bottom; transform: perspective(600px) rotateX(75deg); animation: grid-scroll 4s linear infinite;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%); mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+        }
+        @keyframes grid-scroll { 0% { background-position: 0px 0px; } 100% { background-position: 0px 60px; } }
+    </style>
+    <title>STOCHAST-O-LIGA | Network Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="text-slate-300 selection:bg-cyan-900 selection:text-cyan-100">
+    
+    <div class="space-bg"><div class="stars"></div></div>
+    <div class="retro-grid"></div>
+
+    <div class="fixed top-6 left-6 md:top-8 md:left-10 flex items-center gap-4 z-50">
+        <img src="inferencia_logo.png" alt="Inferencia" class="h-10 md:h-12 w-auto object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" onerror="this.outerHTML='<span class=\\'text-lg md:text-xl text-slate-300 font-bold tracking-widest\\'>INFERENCIA</span>'">
+        <div class="flex flex-col border-l border-slate-700 pl-4">
+            <span class="text-xl md:text-3xl font-black tracking-widest text-slate-200 uppercase leading-none drop-shadow-md">STOCHAST-O-LIGA</span>
+            <span class="text-[9px] md:text-[11px] text-slate-400 tracking-[0.4em] font-bold mt-1.5 uppercase">Presents</span>
+        </div>
+    </div>
+
+    <div class="max-w-md w-full bg-[#040814]/80 backdrop-blur-xl p-10 rounded-xl relative z-10 m-4 shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-slate-800/80 group">
+        <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80 shadow-[0_0_15px_rgba(34,211,238,0.8)]"></div>
+        
+        <div class="text-center mb-8">
+            <div class="mx-auto w-16 h-16 mb-4 text-slate-400 group-hover:text-cyan-400 transition-colors duration-500">
+                <i data-lucide="network" class="w-full h-full stroke-[1.5]"></i>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black text-slate-200 tracking-widest mb-2 uppercase drop-shadow-lg">SYSTEM LOGIN</h1>
+            <p class="text-[9px] text-slate-500 uppercase tracking-[0.2em]">AUTHORIZED ACCESS ONLY</p>
+        </div>
+
+        <form id="loginForm" class="space-y-5">
+            <div class="space-y-2">
+                <label class="block text-[9px] text-slate-500 uppercase tracking-widest ml-1">SELECT PROTOCOL</label>
+                <select id="roundSelect" class="w-full bg-[#02040a] border border-slate-800/80 rounded-md px-4 py-3 text-cyan-300 focus:outline-none focus:border-cyan-600 transition-all uppercase tracking-widest text-sm shadow-inner appearance-none cursor-pointer text-center">
+                    <option value="statcipher">ROUND 2: STAT CIPHER</option>
+                    <option value="blitz">ROUND 3: BLITZ</option>
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[9px] text-slate-500 uppercase tracking-widest ml-1" for="accessCode">ENTER PASSCODE</label>
+                <input 
+                    type="password" id="accessCode" 
+                    class="w-full bg-[#02040a] border border-slate-800/80 rounded-md px-4 py-3.5 text-cyan-300 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600 transition-all uppercase tracking-[0.5em] text-center shadow-inner"
+                    placeholder="••••••••" autocomplete="off" required
+                >
+            </div>
+            
+            <div id="errorMessage" class="text-red-500 text-xs text-center hidden font-bold tracking-wider">
+                [ERROR] Invalid credentials.
+            </div>
+
+            <button type="submit" class="w-full bg-[#0a192f] hover:bg-[#112a46] border border-cyan-900 hover:border-cyan-600 text-cyan-300 hover:text-cyan-100 font-bold py-3.5 rounded-md tracking-[0.2em] uppercase transition-all duration-300 shadow-[0_0_20px_rgba(8,145,178,0.15)] hover:shadow-[0_0_25px_rgba(8,145,178,0.3)] mt-2">
+                AUTHENTICATE
+            </button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // ADD YOUR FIREBASE CONFIG HERE
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAzKmv4xmg_9pQhX06HUmV74J3Ge5e0l3o",
+            authDomain: "stochastoliga.firebaseapp.com",
+            projectId: "stochastoliga",
+            storageBucket: "stochastoliga.firebasestorage.app",
+            messagingSenderId: "684026163908",
+            appId: "1:684026163908:web:a69ebd4a7dcdb83020cf91" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        lucide.createIcons();
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const inputCode = document.getElementById('accessCode').value.toLowerCase().trim();
+            const selectedRound = document.getElementById('roundSelect').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            if (inputCode === "adminstage") { 
+                localStorage.setItem('stochasto_role', 'projector'); 
+                window.location.href = selectedRound === 'blitz' ? "blitz_projector.html" : "projector.html"; 
+                return; 
+            }
+            if (inputCode === "publicview") { 
+                localStorage.setItem('stochasto_role', 'audience'); 
+                window.location.href = "audience.html"; 
+                return; 
+            }
+            if (inputCode === "masterkey") { 
+                localStorage.setItem('stochasto_role', 'admin'); 
+                window.location.href = selectedRound === 'blitz' ? "blitz_admin.html" : "admin.html"; 
+                return; 
+            }
+
+            const snapshot = await get(ref(db, 'teams'));
+            const sysSnap = await get(ref(db, 'system/allowRelogin'));
+            const allowRelogin = sysSnap.val() === true;
+
+            if (snapshot.exists()) {
+                const teamsData = snapshot.val();
+                let foundTeam = null;
+
+                for (const key in teamsData) {
+                    if (teamsData[key].accessCode === inputCode) { foundTeam = teamsData[key]; break; }
+                }
+
+                if (foundTeam) {
+                    if ((foundTeam.status === 'eliminated' || foundTeam.status === 'finished') && !allowRelogin) {
+                        errorMsg.innerText = "[ERROR] Account locked. Restarts disabled.";
+                        errorMsg.classList.remove('hidden');
+                        return;
+                    } else if ((foundTeam.status === 'eliminated' || foundTeam.status === 'finished') && allowRelogin) {
+                        await set(ref(db, 'teams/' + foundTeam.id + '/status'), 'active');
+                        await set(ref(db, 'teams/' + foundTeam.id + '/stages'), 0);
+                        await set(ref(db, 'teams/' + foundTeam.id + '/score'), 0);
+                        await set(ref(db, 'teams/' + foundTeam.id + '/hearts'), 3);
+                        await set(ref(db, 'teams/' + foundTeam.id + '/timeTaken'), 0);
+                        await set(ref(db, 'teams/' + foundTeam.id + '/clicked'), []);
+                    }
+
+                    localStorage.setItem('stochasto_role', 'player');
+                    localStorage.setItem('stochasto_teamId', foundTeam.id);
+                    localStorage.setItem('stochasto_accessCode', inputCode); 
+                    
+                    if (selectedRound === 'blitz') {
+                        window.location.href = "blitz_player.html";
+                    } else {
+                        window.location.href = "player.html";
+                    }
+                } else {
+                    errorMsg.innerText = "[ERROR] Invalid credentials.";
+                    errorMsg.classList.remove('hidden');
+                }
+            } else {
+                errorMsg.innerText = "[ERROR] Database empty.";
+                errorMsg.classList.remove('hidden'); 
+            }
+        });
+    </script>
+</body>
+</html>

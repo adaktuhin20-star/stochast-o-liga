@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOCHAST-O-LIGA | Main Stage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: radial-gradient(circle at bottom, #082f49 0%, #030712 100%); overflow: hidden; }
+        .stars { position: absolute; width: 100%; height: 100%; background: transparent; }
+        .stars::after {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(1.5px 1.5px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 140px 70px, #e0f2fe, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #bae6fd, rgba(0,0,0,0)), radial-gradient(2.5px 2.5px at 160px 120px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat; background-size: 250px 250px; animation: moveStars 150s linear infinite; opacity: 0.4;
+        }
+        @keyframes moveStars { from { background-position: 0 0; } to { background-position: -10000px 5000px; } }
+    </style>
+</head>
+<body class="text-slate-300 font-mono h-screen p-8 flex flex-col overflow-hidden">
+    
+    <div class="space-bg"><div class="stars"></div></div>
+
+    <div class="flex items-center justify-between border-b border-slate-800 pb-6 mb-6 shrink-0 z-10 relative">
+        <div class="flex items-center gap-6">
+            <img src="logo.png" alt="Logo" class="h-20 w-auto object-contain" onerror="this.outerHTML='<div class=\\'h-16 w-16 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-bold\\'>LOGO</div>'">
+            <div>
+                <h1 class="text-5xl font-bold text-white tracking-widest flex items-center gap-4 uppercase">STOCHAST-O-LIGA</h1>
+                <p class="text-slate-400 text-xl tracking-widest mt-2 uppercase">LIVE PREVIEW WINDOW</p>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-slate-500 text-xl tracking-widest uppercase mb-1">System Window</div>
+            <div id="mainTimer" class="text-7xl font-bold text-cyan-100 tabular-nums shadow-cyan-500/50 drop-shadow-[0_0_15px_rgba(207,250,255,0.3)]">15:00</div>
+        </div>
+    </div>
+
+    <div class="flex-1 flex gap-8 min-h-0 z-10 relative">
+        
+        <div class="w-2/3 flex flex-col gap-4 overflow-y-auto custom-scroll pr-4 pb-4 bg-slate-900/40 backdrop-blur rounded-xl p-6" id="raceContainer">
+            <div class="text-center text-slate-500 animate-pulse mt-20">Awaiting Database Connection...</div>
+        </div>
+
+        <div class="w-1/3 flex flex-col gap-6 min-h-0">
+            <div class="flex-1 border border-slate-800 bg-slate-900/60 backdrop-blur rounded-xl p-6 flex flex-col overflow-hidden shadow-[inset_0_0_30px_rgba(0,0,0,0.5)]">
+                <h2 class="text-cyan-500 font-bold mb-4 flex items-center gap-2 tracking-widest uppercase text-sm border-b border-slate-800 pb-2 shrink-0">
+                    <i data-lucide="activity" class="w-4 h-4"></i> Network Activity Log
+                </h2>
+                <div id="tickerContainer" class="flex-1 overflow-y-auto custom-scroll flex flex-col space-y-3 pr-2 pb-2 min-h-0">
+                    <div class="text-xs text-slate-600 italic">System listening for team actions...</div>
+                </div>
+            </div>
+
+            <div class="h-64 shrink-0 border border-fuchsia-800/50 bg-fuchsia-950/40 backdrop-blur rounded-xl p-6 relative overflow-hidden shadow-[0_0_20px_rgba(217,70,239,0.1)]">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-fuchsia-600 to-purple-600"></div>
+                <h2 class="text-fuchsia-400 font-bold mb-4 flex items-center gap-2 tracking-widest uppercase text-sm"><i data-lucide="focus" class="w-4 h-4"></i> Directive Spotlight</h2>
+                <div id="spotlightContent" class="transition-opacity duration-500 opacity-100">
+                    <div id="spotlightTeam" class="text-xl font-bold text-slate-200 mb-2 uppercase tracking-wider">AWAITING TEAMS</div>
+                    <div class="text-xs text-fuchsia-500/70 uppercase tracking-widest mb-2" id="spotlightStage">CLUE 0</div>
+                    <p id="spotlightQuestion" class="text-sm text-fuchsia-100 leading-relaxed border-l-2 border-fuchsia-500 pl-3">Scanning network for active problem sets...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAzKmv4xmg_9pQhX06HUmV74J3Ge5e0l3o", authDomain: "stochastoliga.firebaseapp.com", projectId: "stochastoliga", storageBucket: "stochastoliga.firebasestorage.app", messagingSenderId: "684026163908", appId: "1:684026163908:web:a69ebd4a7dcdb83020cf91" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        lucide.createIcons();
+
+        const raceContainer = document.getElementById('raceContainer'); const timerElement = document.getElementById('mainTimer'); const tickerContainer = document.getElementById('tickerContainer'); const spotlightTeam = document.getElementById('spotlightTeam'); const spotlightStage = document.getElementById('spotlightStage'); const spotlightQuestion = document.getElementById('spotlightQuestion'); const spotlightContent = document.getElementById('spotlightContent');
+        const trackColors = ['bg-cyan-500', 'bg-emerald-500', 'bg-fuchsia-500', 'bg-amber-500', 'bg-blue-500'];
+
+        let previousTeamsState = {}; let initialLoadDone = false; let activeTeamsList = []; let spotlightIndex = 0;
+
+        function addLog(message, colorClass) {
+            const logHtml = `<div class="text-sm border-l-2 border-slate-700 pl-3 animate-[pulse_0.5s_ease-out]"><span class="text-slate-600 text-xs mr-2">[${timerElement.innerText}]</span> <span class="${colorClass}">${message}</span></div>`;
+            tickerContainer.insertAdjacentHTML('beforeend', logHtml);
+            tickerContainer.scrollTop = tickerContainer.scrollHeight;
+        }
+
+        setInterval(() => {
+            if (activeTeamsList.length === 0) return;
+            spotlightContent.classList.remove('opacity-100'); spotlightContent.classList.add('opacity-0');
+            setTimeout(() => {
+                spotlightIndex = (spotlightIndex + 1) % activeTeamsList.length; const team = activeTeamsList[spotlightIndex]; const maxStages = team.totalStages || 5;
+                spotlightTeam.innerText = team.name; spotlightStage.innerText = `CLUE ${team.stages + 1}`;
+                if (team.questions && team.stages < maxStages) { spotlightQuestion.innerText = team.questions[team.stages]; } else if (team.stages >= maxStages) { spotlightQuestion.innerText = "TREASURE UNLOCKED. Awaiting extraction."; } else { spotlightQuestion.innerText = "Processing directive..."; }
+                spotlightContent.classList.remove('opacity-0'); spotlightContent.classList.add('opacity-100');
+            }, 500); 
+        }, 8000); 
+
+        function renderRace(teamsArray) {
+            raceContainer.innerHTML = '';
+            teamsArray.forEach((team, index) => {
+                const isElim = team.status === 'eliminated'; const maxStages = team.totalStages || 5; const progressPercentage = (team.stages / maxStages) * 100; const teamColor = team.color || trackColors[index % trackColors.length];
+                let heartsHtml = ''; for(let i=0; i<3; i++) { heartsHtml += `<i data-lucide="heart" class="w-6 h-6 ${i < team.hearts ? 'text-red-500 fill-red-500' : 'text-slate-800'}"></i>`; }
+
+                const trackHtml = `
+                    <div class="bg-slate-950 border ${isElim ? 'border-red-900/50 opacity-40' : 'border-slate-800'} p-4 rounded-xl flex items-center shrink-0">
+                        <div class="w-48 border-r border-slate-800 pr-4 mr-4 shrink-0">
+                            <div class="text-xl font-bold ${isElim ? 'text-slate-500' : 'text-slate-200'} tracking-wider mb-1 uppercase truncate" title="${team.name}">${team.name}</div>
+                            <div class="flex gap-1">${heartsHtml}</div>
+                        </div>
+                        <div class="flex-1 relative h-8 bg-[#030712] rounded-full border border-slate-800 overflow-hidden">
+                            <div class="${teamColor} h-full transition-all duration-1000 ease-out flex items-center justify-end pr-2 shadow-[0_0_15px_rgba(255,255,255,0.2)]" style="width: ${progressPercentage > 5 ? progressPercentage : 5}%"></div>
+                        </div>
+                        <div class="flex items-center gap-6 ml-6 shrink-0">
+                            <div class="text-right"><div class="text-slate-500 text-[10px] tracking-widest uppercase">Score</div><div class="text-2xl font-bold text-emerald-400 tabular-nums">${team.score || 0}</div></div>
+                            <div class="w-px h-8 bg-slate-800"></div>
+                            <div class="w-20 text-right">${isElim ? `<span class="text-red-500 font-bold text-xs border border-red-500 px-2 py-1 rounded">ELIMINATED</span>` : `<div class="text-slate-500 text-[10px] tracking-widest uppercase">Clue</div><div class="text-2xl font-bold text-slate-200">${team.stages || 0}<span class="text-slate-600 text-xs">/${maxStages}</span></div>`}</div>
+                        </div>
+                    </div>`;
+                raceContainer.insertAdjacentHTML('beforeend', trackHtml);
+            });
+            lucide.createIcons();
+        }
+
+        onValue(ref(db, 'teams'), (snapshot) => {
+            const data = snapshot.val(); if (!data) return;
+            const liveTeamsArray = []; activeTeamsList = []; 
+            for (const key in data) {
+                const team = data[key]; liveTeamsArray.push(team);
+                if (team.status === 'active') activeTeamsList.push(team);
+                if (initialLoadDone) {
+                    const prev = previousTeamsState[key];
+                    if (prev) {
+                        if (team.hearts < prev.hearts && team.hearts > 0) { addLog(`⚠️ ${team.name} opened the wrong door. -1 Life.`, 'text-amber-400'); }
+                        if (team.status === 'eliminated' && prev.status !== 'eliminated') { addLog(`💀 FATAL ERROR: ${team.name} has been locked out!`, 'text-red-500 font-bold'); }
+                        if (team.stages === prev.stages + 1) { addLog(`✅ ${team.name} successfully solved clue ${team.stages}.`, 'text-emerald-400'); }
+                        if (team.stages > prev.stages + 1) { addLog(`🌀 ANOMALY: ${team.name} guessed right & jumped to clue ${team.stages}!`, 'text-cyan-400 font-bold'); }
+                        if (team.status === 'finished' && prev.status !== 'finished') { addLog(`🏆 MISSION SECURED: ${team.name} found the treasure!`, 'text-fuchsia-400 font-bold'); }
+                    }
+                }
+                previousTeamsState[key] = { ...team };
+            }
+            initialLoadDone = true; 
+            liveTeamsArray.sort((a, b) => { if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0); return (b.stages || 0) - (a.stages || 0); });
+            renderRace(liveTeamsArray);
+            if (spotlightTeam.innerText === "AWAITING TEAMS" && activeTeamsList.length > 0) {
+                spotlightTeam.innerText = activeTeamsList[0].name; spotlightQuestion.innerText = activeTeamsList[0].questions ? activeTeamsList[0].questions[activeTeamsList[0].stages] : "Loading...";
+            }
+        });
+
+        let timeLeft = 900; let isSystemPaused = true; 
+        onValue(ref(db, 'system/status'), (snapshot) => { isSystemPaused = (snapshot.val() !== 'playing'); });
+        setInterval(() => {
+            if (timeLeft <= 0 || isSystemPaused) return;
+            timeLeft--;
+            const m = Math.floor(timeLeft / 60); const s = (timeLeft % 60).toString().padStart(2, '0');
+            if (typeof timerElement !== 'undefined') {
+                timerElement.innerText = `${m}:${s}`;
+                if (timeLeft < 60) { timerElement.classList.add('text-red-500', 'shadow-red-500/50'); timerElement.classList.remove('text-cyan-100', 'shadow-cyan-500/50'); }
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOCHAST-O-LIGA | Team Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        .space-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background: radial-gradient(circle at bottom, #082f49 0%, #030712 100%); overflow: hidden; }
+        .stars { position: absolute; width: 100%; height: 100%; background: transparent; }
+        .stars::after {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(1.5px 1.5px at 20px 30px, #ffffff, rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 140px 70px, #e0f2fe, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #bae6fd, rgba(0,0,0,0)), radial-gradient(2.5px 2.5px at 160px 120px, #ffffff, rgba(0,0,0,0));
+            background-repeat: repeat; background-size: 250px 250px; animation: moveStars 150s linear infinite; opacity: 0.4;
+        }
+        @keyframes moveStars { from { background-position: 0 0; } to { background-position: -10000px 5000px; } }
+    </style>
+</head>
+<body class="text-slate-300 font-mono min-h-screen flex flex-col lg:flex-row p-2 sm:p-4 gap-4 sm:gap-6 relative">
+    
+    <div class="space-bg"><div class="stars"></div></div>
+
+    <div id="pauseOverlay" class="fixed inset-0 bg-[#030712]/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center transition-opacity duration-300 p-4">
+        
+        <div class="text-center mb-6">
+            <h2 class="text-lg sm:text-2xl font-bold text-slate-300 tracking-widest uppercase">Round 3</h2>
+            <h1 class="text-4xl sm:text-6xl font-black text-cyan-400 tracking-widest uppercase drop-shadow-[0_0_15px_rgba(34,211,238,0.5)] mt-1">STATCIPHER</h1>
+        </div>
+        
+        <p class="text-cyan-200 text-lg sm:text-xl italic mb-8 text-center max-w-2xl font-bold">"Discover the elusive treasure behind the correct door."</p>
+        
+        <div class="max-w-3xl bg-slate-900/80 border border-cyan-800 p-6 sm:p-8 rounded-xl text-slate-300 text-sm sm:text-base space-y-4 mb-8 shadow-[0_0_30px_rgba(8,145,178,0.15)] leading-relaxed">
+            <p>In this round each team will be provided with <strong class="text-cyan-400">6 clues</strong> where the preceding clue will lead to the door of the next one.</p>
+            <p>Mind that, several doors hide the same clue, so a team can make a <strong class="text-amber-400">random lucky guess</strong> too! (Though, no points will be awarded for a lucky guess.) But a lucky guess can lead you to the treasure in much fewer steps. <span class="text-slate-400 italic">E.g Suppose you are in second clue and your lucky guess leads you to the sixth clue, then you will just be one clue away from the treasure! (Since the six clues are not interconnected.)</span></p>
+            <p>Opening the wrong door results in <strong class="text-red-400">loss of life</strong> and each team will have <strong class="text-red-400">3 lives</strong> for the entire journey.</p>
+            <p>For each correct door you open, <strong class="text-emerald-400">5 points</strong> will be awarded and upon unlocking the treasure door, <strong class="text-emerald-400">10 extra points</strong> will be awarded.</p>
+            <p>Each team will get the same set of clues and time limit for the entire journey is <strong class="text-amber-400">15 minutes</strong>.</p>
+        </div>
+        
+        <div class="flex items-center gap-3 bg-cyan-950/50 border border-cyan-800 px-6 py-3 rounded-full animate-pulse">
+            <i data-lucide="lock" class="w-5 h-5 text-cyan-400"></i>
+            <p class="text-cyan-400 text-sm sm:text-base tracking-widest font-bold">AWAITING ADMIN AUTHORIZATION TO BEGIN...</p>
+        </div>
+    </div>
+
+    <div class="w-full lg:w-1/3 flex flex-col gap-4">
+        
+        <div class="flex items-center justify-start gap-4 mt-1 mb-2 px-2">
+            <img src="logo.png" alt="Logo" class="h-10 sm:h-12 w-auto object-contain drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]" onerror="this.outerHTML='<div class=\\'h-10 w-10 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-bold\\'>LOGO</div>'">
+            <h2 class="text-xl sm:text-2xl font-black text-slate-200 tracking-[0.2em] uppercase drop-shadow-md">STAT CIPHER</h2>
+        </div>
+
+        <div class="border border-cyan-800 bg-slate-900/60 backdrop-blur p-4 sm:p-6 rounded-lg shadow-[0_0_15px_rgba(8,145,178,0.2)] relative overflow-hidden shrink-0">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
+            <h1 id="uiTeamName" class="text-xl sm:text-2xl font-bold text-cyan-400 mb-4 tracking-wider uppercase truncate">LOADING...</h1>
+            
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
+                <div class="bg-slate-950 p-2 sm:p-3 rounded border border-slate-800 text-center">
+                    <div class="text-[10px] sm:text-xs text-slate-500">TIME REMAINING</div>
+                    <div id="playerTimer" class="text-xl sm:text-2xl font-bold text-cyan-100">15:00</div>
+                </div>
+                <div class="bg-slate-950 p-2 sm:p-3 rounded border border-slate-800 text-center">
+                    <div class="text-[10px] sm:text-xs text-slate-500">SCORE</div>
+                    <div id="playerScore" class="text-xl sm:text-2xl font-bold text-emerald-400">0</div>
+                </div>
+            </div>
+            <div class="mb-1 sm:mb-2 text-[10px] sm:text-xs text-slate-500 uppercase">Lives Remaining</div>
+            <div id="playerHearts" class="flex gap-2"></div>
+        </div>
+
+        <div class="flex-1 border border-cyan-800 bg-slate-900/60 backdrop-blur p-4 sm:p-6 rounded-lg flex flex-col min-h-[200px]">
+            <h2 class="text-xs sm:text-sm font-bold text-cyan-500 flex items-center gap-2 mb-3 sm:mb-4 border-b border-slate-800 pb-2">
+                <i data-lucide="terminal" class="w-4 h-4"></i> CURRENT DIRECTIVE
+            </h2>
+            <div id="questionText" class="text-xs sm:text-sm text-slate-200 leading-relaxed overflow-y-auto">
+                Establishing secure connection...
+            </div>
+            <div id="feedbackMessage" class="mt-auto p-2 sm:p-3 bg-slate-950 rounded border border-slate-800 text-[10px] sm:text-xs text-slate-400 hidden"></div>
+        </div>
+    </div>
+
+    <div class="flex-1 border border-slate-800 bg-slate-900/40 backdrop-blur rounded-lg p-2 sm:p-6 flex flex-col items-center justify-center relative">
+        <div id="gameGrid" class="grid grid-cols-10 gap-1 sm:gap-2 w-full max-w-2xl aspect-square"></div>
+        
+        <div id="gameOverScreen" class="absolute inset-0 bg-[#030712]/90 backdrop-blur-sm flex flex-col items-center justify-center hidden z-50 rounded-lg text-center p-4">
+            <div class="bg-[#0a1128] border border-slate-700 p-8 rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.8)] max-w-sm w-full relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80"></div>
+                
+                <h2 id="gameOverTitle" class="text-2xl sm:text-3xl font-black mb-2 uppercase tracking-widest drop-shadow-[0_0_10px_currentColor]">TITLE</h2>
+                <p id="gameOverDesc" class="text-slate-400 mb-6 text-sm">Description</p>
+                
+                <div class="bg-[#030712] border border-slate-800 rounded-lg p-4 mb-8 shadow-inner">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">FINAL SCORE</p>
+                    <p id="gameOverScore" class="text-5xl font-bold text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.4)]">0</p>
+                </div>
+
+                <button onclick="logout()" class="w-full bg-[#0c2a3d] hover:bg-[#12415c] border border-cyan-800 hover:border-cyan-600 text-cyan-300 hover:text-cyan-100 font-bold py-3 rounded-md tracking-[0.2em] uppercase transition-all shadow-[0_0_15px_rgba(8,145,178,0.2)]">
+                    LOG OUT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzKmv4xmg_9pQhX06HUmV74J3Ge5e0l3o",
+            authDomain: "stochastoliga.firebaseapp.com",
+            projectId: "stochastoliga",
+            storageBucket: "stochastoliga.firebasestorage.app",
+            messagingSenderId: "684026163908",
+            appId: "1:684026163908:web:a69ebd4a7dcdb83020cf91"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        lucide.createIcons();
+
+        const TEAM_ID = localStorage.getItem('stochasto_teamId');
+        if (!TEAM_ID) window.location.href = 'index.html'; 
+
+        // GLOBALS
+        let TEAM_NAME = "UNKNOWN"; let TEAM_COLOR = "bg-cyan-500"; let TARGET_PATH = []; let QUESTIONS = []; let TOTAL_STAGES = 6; 
+        let DB_ACCESS_CODE = ""; 
+        let isSystemPaused = true; 
+        
+        let state = { stage: 0, score: 0, hearts: 3, timeLeft: 900, timeTaken: 0, isOver: false, status: 'active', clicked: [] };        
+        const grid = document.getElementById('gameGrid');
+        const heartContainer = document.getElementById('playerHearts');
+        
+        // --- AUDIO CONTROLLERS ---
+        function playCorrectSound() {
+            try {
+                const audio = new Audio('correct answer.mp3');
+                audio.play();
+            } catch(e) { console.log("Audio play failed", e); }
+        }
+
+        function playWrongSound() {
+            try {
+                const audio = new Audio('wrong answer.mp3');
+                audio.play();
+            } catch(e) { console.log("Audio play failed", e); }
+        }
+        
+        onValue(ref(db, 'system/status'), (snapshot) => {
+            isSystemPaused = (snapshot.val() !== 'playing');
+            const overlay = document.getElementById('pauseOverlay');
+            if (isSystemPaused) { overlay.classList.remove('opacity-0', 'pointer-events-none'); } 
+            else { overlay.classList.add('opacity-0', 'pointer-events-none'); }
+        });
+
+        function syncToCloud() {
+            set(ref(db, 'teams/' + TEAM_ID), {
+                id: TEAM_ID, name: TEAM_NAME, stages: state.stage, totalStages: TOTAL_STAGES, hearts: state.hearts, status: state.status, score: state.score, color: TEAM_COLOR, path: TARGET_PATH, questions: QUESTIONS, 
+                accessCode: DB_ACCESS_CODE, timeTaken: state.timeTaken,
+                clicked: state.clicked 
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('playerScore').innerText = state.score;
+            const qElement = document.getElementById('questionText');
+            qElement.innerText = QUESTIONS[state.stage] || "TREASURE UNLOCKED. Awaiting extraction.";
+            if (window.renderMathInElement) { renderMathInElement(qElement, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] }); }
+            
+            heartContainer.innerHTML = '';
+            for(let i=0; i<3; i++) heartContainer.innerHTML += `<i data-lucide="heart" class="w-4 sm:w-6 h-4 sm:h-6 ${i < state.hearts ? 'text-red-500 fill-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]' : 'text-slate-800 fill-slate-800'}"></i>`;
+            lucide.createIcons();
+            syncToCloud(); 
+        }
+
+        function showMessage(text, isError = false) {
+            const msgBox = document.getElementById('feedbackMessage');
+            msgBox.classList.remove('hidden'); msgBox.innerText = text;
+            msgBox.className = `mt-auto p-2 sm:p-3 rounded border text-[10px] sm:text-xs ${isError ? 'bg-red-950/20 border-red-800 text-red-400' : 'bg-cyan-950/20 border-cyan-800 text-cyan-400'}`;
+        }
+
+        function endGame(title, desc, colorClass, finalStatus) {
+            state.isOver = true; state.status = finalStatus;
+            const overlay = document.getElementById('gameOverScreen');
+            overlay.classList.remove('hidden');
+            
+            document.getElementById('gameOverTitle').innerText = title; 
+            document.getElementById('gameOverTitle').className = `text-2xl sm:text-3xl font-black mb-2 uppercase tracking-widest ${colorClass} drop-shadow-[0_0_10px_currentColor]`;
+            
+            document.getElementById('gameOverDesc').innerText = desc;
+            document.getElementById('gameOverScore').innerText = state.score;
+            
+            syncToCloud();
+        }
+
+        window.logout = function() {
+            localStorage.removeItem('stochasto_role');
+            localStorage.removeItem('stochasto_teamId');
+            localStorage.removeItem('stochasto_accessCode');
+            window.location.href = 'index.html';
+        }
+
+        function handleDoorClick(id, btnElement) {
+            if(state.isOver || isSystemPaused || state.clicked.includes(id)) return;
+            state.clicked.push(id); 
+
+            const treasureId = TARGET_PATH[TARGET_PATH.length - 1];
+            const isTreasure = (id === treasureId); 
+            const currentTarget = TARGET_PATH[state.stage]; 
+            const futureMatchIndex = TARGET_PATH.indexOf(id);
+
+            if (isTreasure) {
+                state.score += 10; 
+                playCorrectSound(); // Play Correct Sound
+                btnElement.className = "bg-emerald-500 text-slate-950 border-emerald-300 w-full h-full aspect-square rounded font-bold shadow-[0_0_15px_rgba(52,211,153,0.8)]";
+                
+                if (state.stage === TOTAL_STAGES) {
+                    endGame("MISSION ACCOMPLISHED", "Perfect Run! You unlocked all clues and secured the treasure.", "text-emerald-400", "finished");
+                } else {
+                    endGame("PREMATURE DISCOVERY", "You found the treasure early via a lucky guess!", "text-amber-500", "finished");
+                }
+            } 
+            else if (id === currentTarget) {
+                state.score += 5; 
+                state.stage++;
+                playCorrectSound(); // Play Correct Sound
+                btnElement.className = "bg-cyan-500 text-slate-950 border-cyan-300 w-full h-full aspect-square rounded font-bold shadow-[0_0_10px_rgba(6,182,212,0.8)]";
+                showMessage(`[SUCCESS] Door ${id} unlocked. +5 Points.`);
+                updateUI();
+            } 
+            else if (futureMatchIndex > state.stage && !isTreasure) {
+                state.score += 0; 
+                state.stage = futureMatchIndex + 1; 
+                playCorrectSound(); // Play Correct Sound
+                btnElement.className = "bg-amber-500 text-slate-950 border-amber-300 w-full h-full aspect-square rounded font-bold";
+                showMessage(`[LUCKY GUESS] You jumped to Clue ${state.stage + 1}! (0 Points awarded)`);
+                updateUI();
+            } 
+            else {
+                state.hearts--;
+                playWrongSound(); // Play Wrong Sound
+                btnElement.className = "bg-slate-900 border-red-800 text-red-500 w-full h-full aspect-square rounded font-bold opacity-50";
+                showMessage(`[ERROR] Wrong door. -1 Life.`, true);
+                if(state.hearts <= 0) {
+                    endGame("OUT OF LIVES", "System integrity depleted.", "text-red-500", "eliminated");
+                } else {
+                    updateUI();
+                }
+            }
+        }
+
+        get(ref(db, 'teams/' + TEAM_ID)).then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                TEAM_NAME = data.name || "UNKNOWN"; TEAM_COLOR = data.color || "bg-cyan-500"; TARGET_PATH = data.path || []; QUESTIONS = data.questions || [];
+                DB_ACCESS_CODE = data.accessCode || ""; 
+                TOTAL_STAGES = TARGET_PATH.length > 0 ? TARGET_PATH.length - 1 : 6; 
+                document.getElementById('uiTeamName').innerText = TEAM_NAME;
+
+                state.timeTaken = data.timeTaken || 0;
+                state.timeLeft = 900 - state.timeTaken;
+                state.stage = data.stages || 0; state.score = data.score || 0; state.hearts = data.hearts !== undefined ? data.hearts : 3; state.status = data.status || 'active'; state.clicked = data.clicked || []; 
+                
+                for(let i = 1; i <= 100; i++) {
+                    const btn = document.createElement('button'); btn.innerText = i;
+                    if (state.clicked.includes(i)) {
+                        btn.className = "bg-slate-900 border-slate-800 text-slate-600 text-[10px] sm:text-xs w-full h-full aspect-square rounded font-bold opacity-50 cursor-not-allowed";
+                    } else {
+                        btn.className = "bg-[#050b14] border border-slate-700 text-slate-400 text-[10px] sm:text-xs font-bold rounded hover:border-cyan-500 hover:text-cyan-400 transition-colors w-full h-full flex items-center justify-center aspect-square shadow-inner";
+                        btn.onclick = () => handleDoorClick(i, btn);
+                    }
+                    grid.appendChild(btn);
+                }
+
+                if (state.status === 'eliminated' || state.status === 'finished') {
+                    const colorClass = state.status === 'finished' ? "text-emerald-500" : "text-red-500";
+                    const title = state.status === 'finished' ? "SESSION CLOSED" : "ELIMINATED";
+                    endGame(title, "Awaiting Admin Action.", colorClass, state.status);
+                    document.getElementById('playerTimer').innerText = "0:00";
+                } else {
+                    updateUI(); 
+                    setInterval(() => {
+                        if(state.isOver || isSystemPaused || state.timeLeft <= 0) return;
+                        
+                        state.timeTaken++;
+                        state.timeLeft = 900 - state.timeTaken;
+                        
+                        const m = Math.floor(state.timeLeft / 60); const s = (state.timeLeft % 60).toString().padStart(2, '0');
+                        document.getElementById('playerTimer').innerText = `${m}:${s}`;
+                        
+                        if(state.timeLeft === 0) endGame("TIMEOUT", "Time limit reached.", "text-amber-500", "eliminated");
+                        
+                        if (state.timeTaken % 10 === 0 && !state.isOver) {
+                            syncToCloud();
+                        }
+                    }, 1000);
+                }
+            } else { document.getElementById('questionText').innerText = "ERROR: Team data not found. Please contact Admin."; }
+        });
+    </script>
+</body>
+</html>
